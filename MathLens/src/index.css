@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+@import 'katex/dist/katex.min.css';
+
+@theme {
+  --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* MathLens neon palette (dark, default) — bright on deep navy */
+  --color-bg: #0a0e20;
+  --color-bg-soft: #0e142a;
+  --color-panel: #121a33;
+  --color-panel-2: #172240;
+  --color-edge: #2c3d72;
+  --color-ink: #eef2ff;
+  --color-dim: #a9b6e6;
+  --color-faint: #6d7ab0;
+
+  --color-grid: #222e5c;
+  --color-axis: #5d76c8;
+
+  --color-curve: #45e0ff; /* neon cyan */
+  --color-gold: #ffe066;
+  --color-mint: #4dffa0;
+  --color-coral: #ff7a7a;
+  --color-teal: #2dffd8;
+  --color-violet: #cd9bff;
+}
+
+/* ---------- light theme ---------- */
+html.light {
+  --color-bg: #f6f8fd;
+  --color-bg-soft: #eef1f9;
+  --color-panel: #ffffff;
+  --color-panel-2: #f1f4fb;
+  --color-edge: #d9dfee;
+  --color-ink: #171a2e;
+  --color-dim: #49536e;
+  --color-faint: #8a93b0;
+
+  --color-grid: #e6eaf5;
+  --color-axis: #b3bdd6;
+
+  --color-curve: #0077d9;
+  --color-gold: #b86e00;
+  --color-mint: #0a9e58;
+  --color-coral: #d92c2c;
+  --color-teal: #0d8f7e;
+  --color-violet: #7d3fd6;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-curve) 35%, transparent);
+}
+
+/* Slim scrollbars to match the UI */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-edge) transparent;
+}
+
+.katex {
+  font-size: 1.06em;
+}
+
+.katex-display {
+  margin: 0.4em 0;
+}
+
+/* neon glow for primary UI accents */
+.glow-curve {
+  text-shadow: 0 0 18px color-mix(in oklab, var(--color-curve) 55%, transparent);
+}
+
+/* Step card entrance */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise {
+  animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
