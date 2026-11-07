@@ -66,10 +66,28 @@ function boardKey(period: Period, now: number): { key: string; label: string } {
 }
 
 /* ------------------------------------------------------------ Upstash REST */
-function redisConfig() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
-  return url && token ? { url: url.replace(/\/+$/, ''), token } : null
+/**
+ * Upstash REST credentials. Accepts the default names set by the Vercel
+ * "Upstash for Redis" integration (KV_REST_API_URL / KV_REST_API_TOKEN), the
+ * Upstash console names (UPSTASH_REDIS_REST_URL / _TOKEN), and the same names
+ * with any custom prefix chosen when connecting the store (e.g. STORAGE_KV_REST_API_URL).
+ */
+function redisConfig(): { url: string; token: string } | null {
+  const env = process.env
+  const candidates: Array<[string, string]> = [
+    ['KV_REST_API_URL', 'KV_REST_API_TOKEN'],
+    ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'],
+  ]
+  for (const k of Object.keys(env)) {
+    const m = k.match(/^(.+?_)(KV_REST_API|UPSTASH_REDIS_REST)_URL$/)
+    if (m) candidates.push([k, `${m[1]}${m[2]}_TOKEN`])
+  }
+  for (const [u, t] of candidates) {
+    const url = env[u]
+    const token = env[t]
+    if (url && token && /^https?:\/\//.test(url)) return { url: url.replace(/\/+$/, ''), token }
+  }
+  return null
 }
 
 type Cmd = Array<string | number>
@@ -160,8 +178,9 @@ export async function POST(req: Request): Promise<Response> {
 /* ------------------------------------------------------------ GET: read a board / export */
 export async function GET(req: Request): Promise<Response> {
   const cfg = redisConfig()
-  if (!cfg) return json({ error: 'no_database' }, 501)
   const url = new URL(req.url)
+  if (url.searchParams.get('diag') === '1') return diagnose(cfg)
+  if (!cfg) return json({ error: 'no_database' }, 501)
 
   if (url.searchParams.get('export') === 'csv') return exportCsv(cfg, url)
 
@@ -217,4 +236,26 @@ async function exportCsv(cfg: { url: string; token: string }, url: URL): Promise
       'Cache-Control': 'no-store',
     },
   })
+}
+
+/** GET /api/leaderboard?diag=1 — is the shared database reachable? (shows variable names only) */
+async function diagnose(cfg: { url: string; token: string } | null): Promise<Response> {
+  const related = Object.keys(process.env).filter((k) => /KV_|REDIS|UPSTASH/.test(k)).sort()
+  if (!cfg) {
+    const tcpOnly = related.some((k) => /REDIS_URL$|KV_URL$/.test(k)) && !related.some((k) => /REST/.test(k))
+    return json({
+      database: 'missing',
+      envVarsFound: related,
+      hint: tcpOnly
+        ? 'Chỉ tìm thấy REDIS_URL (giao thức TCP). Hãy kết nối "Upstash for Redis" để có KV_REST_API_URL và KV_REST_API_TOKEN, rồi Redeploy.'
+        : 'Chưa có KV_REST_API_URL / KV_REST_API_TOKEN. Vercel → Storage → Upstash for Redis → Connect Project, rồi Redeploy.',
+    })
+  }
+  try {
+    const t0 = Date.now()
+    const [pong] = await pipeline(cfg, [['PING']])
+    return json({ database: pong === 'PONG' ? 'ok' : 'unexpected', latencyMs: Date.now() - t0, envVarsFound: related })
+  } catch (e) {
+    return json({ database: 'error', detail: String((e as Error).message).slice(0, 200), envVarsFound: related }, 502)
+  }
 }

@@ -84,6 +84,13 @@ export function Leaderboard() {
               ))}
             </div>
 
+            {board?.source === 'local' && (
+              <div className="mt-4 rounded-2xl border border-gold/40 bg-gold/[0.08] px-5 py-3 text-[12.5px] leading-relaxed text-dim">
+                <span className="font-bold text-gold">{t('lb.localTitle')}</span>{' '}
+                {board.reason === 'not_configured' ? t('lb.notConfigured') : t('lb.offline')}
+              </div>
+            )}
+
             <div className="mt-4 rounded-2xl border border-edge bg-panel">
               <div className="flex items-center justify-between gap-3 border-b border-edge px-5 py-3">
                 <p className="text-[12.5px] font-semibold text-dim">

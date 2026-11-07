@@ -8,6 +8,9 @@ import type { Lang } from './index'
 export type Dict = Record<string, string>
 
 const en: Dict = {
+  'lb.localTitle': "Showing this device only.",
+  'lb.notConfigured': "The server has no database yet, so there is no shared leaderboard. Admin: Vercel → Storage → Upstash for Redis → Connect Project, then Redeploy.",
+  'lb.offline': "Cannot reach the server — the shared leaderboard returns when you are back online.",
   'rail.live': "Live game",
   'rail.liveSub': "Whole-class quiz, Kahoot-style",
   'live.overline': "Live game",
@@ -244,6 +247,9 @@ const en: Dict = {
 }
 
 const vi: Dict = {
+  'lb.localTitle': "Đang xem bảng xếp hạng trên máy này.",
+  'lb.notConfigured': "Máy chủ chưa kết nối cơ sở dữ liệu nên chưa có bảng xếp hạng chung cho mọi người. Quản trị viên: Vercel → Storage → Upstash for Redis → Connect Project, rồi Redeploy.",
+  'lb.offline': "Không kết nối được máy chủ — bảng xếp hạng chung sẽ hiện lại khi có mạng.",
   'rail.live': "Thi đấu trực tiếp",
   'rail.liveSub': "Cả lớp cùng chơi, kiểu Kahoot",
   'live.overline': "Thi đấu trực tiếp",

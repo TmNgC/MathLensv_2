@@ -24,6 +24,8 @@ export interface Board {
   entries: BoardEntry[]
   me: BoardEntry | null
   source: 'global' | 'local'
+  /** why the local board is shown: server has no database yet, or it is unreachable */
+  reason?: 'not_configured' | 'offline'
 }
 
 export interface SubmitResult {
@@ -102,12 +104,13 @@ export async function fetchBoard(period: Period, me: UserProfile | null): Promis
     const q = new URLSearchParams({ period })
     if (me) q.set('name', me.name)
     const res = await fetch(`/api/leaderboard?${q}`, { headers: { Accept: 'application/json' } })
+    if (res.status === 501) return { ...localBoard(period, me?.key ?? null), reason: 'not_configured' }
     if (!res.ok) throw new Error(`status ${res.status}`)
     const data = (await res.json()) as Board
     if (!Array.isArray(data.entries)) throw new Error('bad shape')
     return { ...data, source: 'global' }
   } catch {
-    return localBoard(period, me?.key ?? null)
+    return { ...localBoard(period, me?.key ?? null), reason: 'offline' }
   }
 }
 

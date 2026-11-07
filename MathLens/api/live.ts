@@ -33,10 +33,28 @@ function json(data: unknown, status = 200): Response {
   })
 }
 
-function redisConfig() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
-  return url && token ? { url: url.replace(/\/+$/, ''), token } : null
+/**
+ * Upstash REST credentials. Accepts the default names set by the Vercel
+ * "Upstash for Redis" integration (KV_REST_API_URL / KV_REST_API_TOKEN), the
+ * Upstash console names (UPSTASH_REDIS_REST_URL / _TOKEN), and the same names
+ * with any custom prefix chosen when connecting the store (e.g. STORAGE_KV_REST_API_URL).
+ */
+function redisConfig(): { url: string; token: string } | null {
+  const env = process.env
+  const candidates: Array<[string, string]> = [
+    ['KV_REST_API_URL', 'KV_REST_API_TOKEN'],
+    ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'],
+  ]
+  for (const k of Object.keys(env)) {
+    const m = k.match(/^(.+?_)(KV_REST_API|UPSTASH_REDIS_REST)_URL$/)
+    if (m) candidates.push([k, `${m[1]}${m[2]}_TOKEN`])
+  }
+  for (const [u, t] of candidates) {
+    const url = env[u]
+    const token = env[t]
+    if (url && token && /^https?:\/\//.test(url)) return { url: url.replace(/\/+$/, ''), token }
+  }
+  return null
 }
 type Cfg = { url: string; token: string }
 type Cmd = Array<string | number>
