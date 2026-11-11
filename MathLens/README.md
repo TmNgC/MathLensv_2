@@ -52,6 +52,15 @@ Mỗi bài (trừ Lab) có hai tab: **🎬 Trực quan** (hoạt hình từng b�
 Không có key (hoặc lỗi mạng), quiz tự chuyển sang **ngân hàng câu hỏi offline**
 và phân tích bằng bộ máy quy tắc nội bộ — trang vẫn dùng được đầy đủ.
 
+### Cấu hình AI (biến môi trường trên Vercel)
+| Biến | Ý nghĩa |
+|---|---|
+| `LLM_API_KEY` | khóa API (bắt buộc để bật AI) |
+| `LLM_BASE_URL` | địa chỉ API chuẩn OpenAI. Gemini: `https://generativelanguage.googleapis.com/v1beta/openai` |
+| `LLM_MODEL` | tên model; có thể ghi **nhiều model cách nhau dấu phẩy** — model sau được dùng khi model trước quá tải, hết hạn mức, bị ngừng hoặc quá chậm |
+| `LLM_TIMEOUT_MS` | thời gian chờ tối đa cho một yêu cầu (mặc định 25000) — quá hạn, web tự dùng ngân hàng câu hỏi offline |
+| `LLM_REASONING_EFFORT` | mức "suy nghĩ" của model (`none`/`minimal`/`low`/...). Mặc định `low` với Gemini để trả lời nhanh |
+
 ## 👤 Tài khoản & 🏆 Bảng xếp hạng
 
 - **Chỉ cần tên** (không mật khẩu): lần đầu mở trang, MathLens hỏi “Ai đang học?”.

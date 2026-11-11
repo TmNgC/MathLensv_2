@@ -4,7 +4,7 @@ import { lessons, lessonById } from '../content'
 import { Formula } from '../components/Formula'
 import { LessonChips, LessonRail } from '../components/LessonRail'
 import { getAttempts, saveAttempt } from '../quiz/store'
-import { loadQuestions } from '../quiz/source'
+import { fetchWithTimeout, loadQuestions } from '../quiz/source'
 import type { AnswerRecord, QuizAnalysis, QuizQuestion } from '../quiz/types'
 import { useLang } from '../i18n/LangContext'
 import { useUser } from '../lib/user'
@@ -174,7 +174,7 @@ export function QuizSpace() {
   async function runAnalysis() {
     setAnalyzing(true)
     try {
-      const res = await fetch('/api/analyze', {
+      const res = await fetchWithTimeout('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

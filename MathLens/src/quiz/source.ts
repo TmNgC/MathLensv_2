@@ -17,6 +17,20 @@ function fromBank(lessonIds: string[], count: number) {
   return { questions: shuffle(pool).slice(0, Math.min(count, pool.length)), offline: true }
 }
 
+/** the server gives the AI ~25 s; past this the client stops waiting and uses the offline bank */
+export const AI_CLIENT_TIMEOUT_MS = 35_000
+
+/** fetch that gives up after `ms` */
+export async function fetchWithTimeout(url: string, init: RequestInit, ms = AI_CLIENT_TIMEOUT_MS): Promise<Response> {
+  const ctl = new AbortController()
+  const timer = setTimeout(() => ctl.abort(), ms)
+  try {
+    return await fetch(url, { ...init, signal: ctl.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 /** questions from the AI endpoint when available, otherwise the offline bank */
 export async function loadQuestions(
   source: QuestionSource,
@@ -26,7 +40,7 @@ export async function loadQuestions(
 ): Promise<{ questions: QuizQuestion[]; offline: boolean }> {
   if (source === 'offline') return fromBank(lessonIds, count)
   try {
-    const res = await fetch('/api/quiz', {
+    const res = await fetchWithTimeout('/api/quiz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lessonIds, count, lang }),
